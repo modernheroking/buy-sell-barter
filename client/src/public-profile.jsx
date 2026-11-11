@@ -33,10 +33,10 @@ function PublicProfile() {
 
     // ✅ Load user + goods + REAL reviews in parallel. Backend must return real reviews only.
     Promise.all([
-      fetch(`http://localhost:5000/api/profile/user/${id}`).then(r => r.json().catch(() => ({}))),
-      fetch(`http://localhost:5000/api/reviews/user/${id}`).then(r => r.json().catch(() => [])),
+      fetch(`https://buy-sell-barter.onrender.com/api/profile/user/${id}`).then(r => r.json().catch(() => ({}))),
+      fetch(`https://buy-sell-barter.onrender.com/api/reviews/user/${id}`).then(r => r.json().catch(() => [])),
       // ✅ Can I review them? Only if I completed a deal with them and haven't reviewed that deal yet
-      fetch(`http://localhost:5000/api/reviews/eligible`, { headers }).then(r => r.json().catch(() => [])),
+      fetch(`https://buy-sell-barter.onrender.com/api/reviews/eligible`, { headers }).then(r => r.json().catch(() => [])),
     ]).then(([profileData, reviewsData, eligibleData]) => {
       if (!profileData.user) { setNotFound(true); setLoading(false); return; }
 

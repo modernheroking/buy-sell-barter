@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
 
-const API = 'http://localhost:5000/api/goods';
+const API = 'https://buy-sell-barter.onrender.com/api/goods';
 
 function SellersDescription() {
     const navigate = useNavigate();

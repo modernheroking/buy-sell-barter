@@ -15,14 +15,14 @@ function TransactionPage() {
   const headers = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
 
   const load = async () => {
-    const r = await fetch(`http://localhost:5000/api/transactions/${id}`, { headers: headers() });
+    const r = await fetch(`https://buy-sell-barter.onrender.com/api/transactions/${id}`, { headers: headers() });
     const data = await r.json().catch(() => ({}));
     if (!r.ok) return alert(data.msg || 'Transaction not found');
     setTx(data);
     setLoading(false);
 
     try {
-      const rr = await fetch('http://localhost:5000/api/reviews/eligible', { headers: headers() });
+      const rr = await fetch('https://buy-sell-barter.onrender.com/api/reviews/eligible', { headers: headers() });
       const eligible = await rr.json().catch(() => []);
       setReviewed(!eligible.some(x => String(x.good._id) === String(data.good._id)));
     } catch {}
@@ -33,7 +33,7 @@ function TransactionPage() {
   const confirm = async () => {
     if (!confirm('Confirm this deal is DONE on your side? This cannot be undone.')) return;
     setConfirming(true);
-    const r = await fetch(`http://localhost:5000/api/transactions/${id}/confirm`, { method: 'POST', headers: headers() });
+    const r = await fetch(`https://buy-sell-barter.onrender.com/api/transactions/${id}/confirm`, { method: 'POST', headers: headers() });
     const data = await r.json().catch(() => ({}));
     if (!r.ok) alert(data.msg || 'Confirm failed');
     else setTx(data);
@@ -42,7 +42,7 @@ function TransactionPage() {
 
   const cancel = async () => {
     if (!confirm('Cancel this deal?')) return;
-    const r = await fetch(`http://localhost:5000/api/transactions/${id}/cancel`, { method: 'POST', headers: headers() });
+    const r = await fetch(`https://buy-sell-barter.onrender.com/api/transactions/${id}/cancel`, { method: 'POST', headers: headers() });
     const data = await r.json().catch(() => ({}));
     if (!r.ok) alert(data.msg || 'Cancel failed');
     else setTx(data);

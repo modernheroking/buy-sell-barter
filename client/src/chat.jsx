@@ -33,7 +33,7 @@ function Chat() {
     if (!token) { navigate('/login'); return; }
     try {
       const lastId = poll && msgs.length ? msgs[msgs.length - 1]._id : null;
-      const url = `http://localhost:5000/api/messages/${withId}${lastId ? `?after=${lastId}` : ''}`;
+      const url = `https://buy-sell-barter.onrender.com/api/messages/${withId}${lastId ? `?after=${lastId}` : ''}`;
       const r = await fetch(url, { headers: headers() });
       const data = await r.json().catch(() => ({}));
 
@@ -78,7 +78,7 @@ function Chat() {
     if (!msgText) return;
     setText(''); setReplyTo(null); setShowEmoji(false);
     try {
-      const r = await fetch(`http://localhost:5000/api/messages/${withId}`, {
+      const r = await fetch(`https://buy-sell-barter.onrender.com/api/messages/${withId}`, {
         method: 'POST',
         headers: { ...headers(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: msgText, type: 'text', replyTo: replyTo?._id || null }),
@@ -117,7 +117,7 @@ function Chat() {
   const deleteMsg = async (id) => {
     setMenuId(null);
     setMsgs(prev => prev.filter(m => m._id !== id));
-    await fetch(`http://localhost:5000/api/messages/${id}`, { method: 'DELETE', headers: headers() });
+    await fetch(`https://buy-sell-barter.onrender.com/api/messages/${id}`, { method: 'DELETE', headers: headers() });
   };
 
   const renderBubble = (m) => {

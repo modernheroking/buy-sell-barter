@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import DefaultUser from './assets/app_icon.png';
 import './App.css';
 
-const API = 'http://localhost:5000/api/goods';
+const API = 'https://buy-sell-barter.onrender.com/api/goods';
 
 function GoodDetail() {
   const { id } = useParams();
@@ -100,7 +100,7 @@ function GoodDetail() {
     if (isCompleted) return alert('This deal is already completed');
     setStarting(true);
     try {
-      const r = await fetch('http://localhost:5000/api/transactions', {
+      const r = await fetch('https://buy-sell-barter.onrender.com/api/transactions', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ goodId: good._id }),

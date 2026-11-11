@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DefaultUser from './assets/app_icon.png';
 import './App.css';
 
-const API = 'http://localhost:5000/api/goods';
+const API = 'https://buy-sell-barter.onrender.com/api/goods';
 
 function Market() {
     const navigate = useNavigate();

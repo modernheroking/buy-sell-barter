@@ -29,7 +29,7 @@ function TransactionCongratsPopup() {
 
     const load = async () => {
       try {
-        const r = await fetch('http://localhost:5000/api/transactions/pending-confirmations', {
+        const r = await fetch('https://buy-sell-barter.onrender.com/api/transactions/pending-confirmations', {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await r.json().catch(() => []);

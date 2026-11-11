@@ -32,7 +32,7 @@ function Header() {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) return;
-        fetch('http://localhost:5000/api/profile/me', {
+        fetch('https://buy-sell-barter.onrender.com/api/profile/me', {
             headers: { Authorization: `Bearer ${token}` }
         })
             .then(r => r.json())

@@ -35,7 +35,7 @@ function EditProfile() {
     } catch {}
 
     // ✅ FIX 2: Then overwrite with fresh backend data (source of truth)
-    fetch('http://localhost:5000/api/profile/me', { headers: { Authorization: `Bearer ${token}` } })
+    fetch('https://buy-sell-barter.onrender.com/api/profile/me', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json().catch(() => ({})))
       .then(d => {
         if (d.msg) { setError(d.msg); return; } // 401 / 404 shows real reason
@@ -81,7 +81,7 @@ function EditProfile() {
     try {
       const token = localStorage.getItem('token');
       if (!token) { navigate('/login'); return; }
-      const res = await fetch('http://localhost:5000/api/profile/me', {
+      const res = await fetch('https://buy-sell-barter.onrender.com/api/profile/me', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ ...form, age: Number(form.age) }),

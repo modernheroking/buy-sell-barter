@@ -14,7 +14,7 @@ function ReviewPage() {
   const headers = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/reviews/eligible', { headers: headers() })
+    fetch('https://buy-sell-barter.onrender.com/api/reviews/eligible', { headers: headers() })
       .then(r => r.json())
       .then(d => { setEligible(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => setLoading(false));
@@ -23,7 +23,7 @@ function ReviewPage() {
   const submit = async (e) => {
     e.preventDefault();
     if (!selected || !text.trim()) return;
-    const r = await fetch('http://localhost:5000/api/reviews', {
+    const r = await fetch('https://buy-sell-barter.onrender.com/api/reviews', {
       method: 'POST',
       headers: { ...headers(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ goodId: selected.good._id, stars, text }),

@@ -13,7 +13,7 @@ function Chats() {
     const token = localStorage.getItem('token');
     if (!token) { navigate('/login'); return; }
     try {
-      const r = await fetch('http://localhost:5000/api/messages/chats', {
+      const r = await fetch('https://buy-sell-barter.onrender.com/api/messages/chats', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await r.json().catch(() => []);

@@ -29,7 +29,7 @@ function Footer() {
             clearLocally(tab);
     
             try {
-                const r = await fetch(`http://localhost:5000/api/notifications/seen/${tab}`, {
+                const r = await fetch(`https://buy-sell-barter.onrender.com/api/notifications/seen/${tab}`, {
                     method: 'POST',
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 });
@@ -62,7 +62,7 @@ function Footer() {
             const token = localStorage.getItem('token');
             if (!token) return;
             try {
-                const r = await fetch('http://localhost:5000/api/notifications/badges', {
+                const r = await fetch('https://buy-sell-barter.onrender.com/api/notifications/badges', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 const data = await r.json().catch(() => ({}));

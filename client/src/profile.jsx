@@ -37,7 +37,7 @@ function Profile() {
     const headers = getHeaders();
 
     try {
-      const r = await fetch('http://localhost:5000/api/profile/me', { headers });
+      const r = await fetch('https://buy-sell-barter.onrender.com/api/profile/me', { headers });
       const data = await r.json().catch(() => ({}));
       if (!r.ok) {
         if (r.status === 401) {
@@ -56,13 +56,13 @@ function Profile() {
     setLoading(false);
 
     try {
-      const r = await fetch('http://localhost:5000/api/goods/mine', { headers });
+      const r = await fetch('https://buy-sell-barter.onrender.com/api/goods/mine', { headers });
       const data = await r.json().catch(() => []);
       setAll(Array.isArray(data) ? data : data.goods || []);
     } catch {}
 
     try {
-      const r = await fetch('http://localhost:5000/api/reviews/mine', { headers });
+      const r = await fetch('https://buy-sell-barter.onrender.com/api/reviews/mine', { headers });
       const data = await r.json().catch(() => []);
       setReviews(Array.isArray(data) ? data : data.reviews || []);
     } catch {}
@@ -112,7 +112,7 @@ function Profile() {
   const deleteItem = async (id) => {
     if (!confirm('Delete this post?')) return;
     const headers = getHeaders();
-    const res = await fetch(`http://localhost:5000/api/goods/${id}`, { method: 'DELETE', headers });
+    const res = await fetch(`https://buy-sell-barter.onrender.com/api/goods/${id}`, { method: 'DELETE', headers });
     if (!res.ok) return alert('Delete failed - login again');
     setAll((prev) => prev.filter((i) => (i._id || i.id) !== id));
   };
@@ -123,13 +123,13 @@ function Profile() {
     let buyerId = null;
     if (username?.trim()) {
       try {
-        const r = await fetch(`http://localhost:5000/api/users/by-username/${username.trim().replace(/^@/, '')}`, { headers });
+        const r = await fetch(`https://buy-sell-barter.onrender.com/api/users/by-username/${username.trim().replace(/^@/, '')}`, { headers });
         const d = await r.json().catch(() => ({}));
         buyerId = d._id || d.user?._id || null;
         if (!buyerId) alert('Username not found - marking done without counterpart. No review will be possible for this deal.');
       } catch {}
     }
-    const res = await fetch(`http://localhost:5000/api/goods/${id}/complete`, {
+    const res = await fetch(`https://buy-sell-barter.onrender.com/api/goods/${id}/complete`, {
       method: 'PUT',
       headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify({ buyerId }),
