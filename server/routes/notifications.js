@@ -2,7 +2,7 @@ const router = require('express').Router();
 const auth = require('../middleware/auth');
 const User = require('../models/User');
 const Good = require('../models/good');
-const Message = require('../models/Message');
+const Message = require('../models/message');
 
 
 const getMe = (req) => {

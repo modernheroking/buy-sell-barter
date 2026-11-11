@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const auth = require('../middleware/auth');
-const Message = require('../models/Message');
+const Message = require('../models/message');
 const User = require('../models/User');
 
 const getId = (req) => req.user?._id || req.userId || req.user?.id;
