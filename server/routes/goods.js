@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const auth = require('../middleware/auth');
-const Good = require('../models/Good');
+const Good = require('../models/good');
 
 const getOwnerId = (req) => req.user?._id || req.userId || req.user?.id;
 
