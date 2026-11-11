@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const auth = require('../middleware/auth');
 const User = require('../models/User');
-const Good = require('../models/Good'); 
+const Good = require('../models/good'); 
 
 router.get('/me', auth, async (req, res) => {
   try {

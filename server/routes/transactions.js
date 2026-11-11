@@ -2,7 +2,7 @@ const Review = require('../models/Review');
 const router = require('express').Router();
 const auth = require('../middleware/auth');
 const Transaction = require('../models/Transaction');
-const Good = require('../models/Good');
+const Good = require('../models/good');
 
 
 router.post('/', auth, async (req, res) => {

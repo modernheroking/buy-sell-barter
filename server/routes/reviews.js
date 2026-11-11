@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const auth = require('../middleware/auth');
 const Review = require('../models/Review');
-const Good = require('../models/Good');
+const Good = require('../models/good');
 
 router.get('/user/:userId', async (req, res) => {
   const reviews = await Review.find({ reviewee: req.params.userId })
