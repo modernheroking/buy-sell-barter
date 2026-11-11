@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const auth = require('../middleware/auth');
-const Review = require('../models/Review');
+const Review = require('../models/review');
 const Good = require('../models/good');
 
 router.get('/user/:userId', async (req, res) => {

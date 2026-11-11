@@ -1,4 +1,4 @@
-const Review = require('../models/Review');
+const Review = require('../models/review');
 const router = require('express').Router();
 const auth = require('../middleware/auth');
 const Transaction = require('../models/Transaction');

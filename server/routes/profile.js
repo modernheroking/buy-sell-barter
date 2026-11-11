@@ -75,7 +75,7 @@ router.get('/user/:idOrUsername', async (req, res) => {
 
     let reviews = [];
     try {
-      const Review = require('../models/Review');
+      const Review = require('../models/review');
       reviews = await Review.find({ userId: user._id }).sort({ createdAt: -1 }).lean();
     } catch {
       reviews = [];
