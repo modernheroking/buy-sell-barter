@@ -7,10 +7,16 @@ const app = express();
 
 console.log('JWT loaded?', !!process.env.JWT_SECRET);
 
-app.use(cors({ 
-  origin: ['http://localhost:5173', 'https://buy-sell-barter.onrender.com', 'https://buy-sell-barter.site.je'], 
-  credentials: true 
+app.use(cors({
+  origin: [
+    'https://buy-sell-barter.site.je',
+    'http://buy-sell-barter.site.je'
+  ],
+  credentials: true,
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization']
 }));
+app.options('*', cors());
 
 
 app.use(express.json({ limit: '50mb' }));
@@ -28,11 +34,11 @@ app.use('/api/messages', require('./routes/messages'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/transactions', require('./routes/transactions'));
 
-// Serve frontend
+
 app.use(express.static(path.join(__dirname, '../client/dist')));
 app.get('/*splat', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => console.log(`Server on http://0.0.0.0:${PORT}`));
+const PORT = process.env.PORT;
+app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
