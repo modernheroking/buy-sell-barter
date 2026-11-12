@@ -47,15 +47,18 @@ function Layout() {
     '/barters-upload',
   ].includes(location.pathname);
 
+  // ✅ FIX: Chat gets full screen - no Header, no Footer
+  const isChatPage = location.pathname.startsWith('/chat/');
+  const hideChrome = isCameraPage || isChatPage;
+
   return (
-    <div className={isCameraPage ? 'no-header-layout' : 'app-layout'}>
-      {!isCameraPage && <Header />}
-      {!isCameraPage && <Footer />}
+    <div className={isCameraPage ? 'no-header-layout' : isChatPage ? 'chat-layout' : 'app-layout'}>
+      {!hideChrome && <Header />}
 
       {/* ✅ Global popup - OUTSIDE Routes, INSIDE the ONE BrowserRouter - works on every page */}
       <TransactionCongrats />
 
-      <main className={isCameraPage ? 'camera-main' : 'main'}>
+      <main className={isCameraPage ? 'camera-main' : isChatPage ? 'chat-main' : 'main'}>
         {/* ✅ NO <Router> here - BrowserRouter in App() is the only router */}
         <Routes>
           <Route path="/" element={<Market />} />
@@ -87,6 +90,9 @@ function Layout() {
           <Route path="/transaction/:id" element={<Transaction />} />
         </Routes>
       </main>
+
+      {/* ✅ FIX: Footer AFTER main, not before. Hidden on chat/camera. */}
+      {!hideChrome && <Footer />}
     </div>
   );
 }
