@@ -151,7 +151,7 @@ router.post('/forgot-password', async (req, res) => {
             `
         });
 
-        res.json({ msg: 'If an account exists with that email, a reset link has been sent. Check your inbox & spam.' });
+        res.json({ msg: 'A reset link has been sent. Check your inbox & spam.' });
     } catch (err) {
         console.error('Forgot password error:', err);
         res.status(500).json({ msg: 'Server error. Try again.' });
