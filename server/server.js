@@ -10,7 +10,9 @@ console.log('JWT loaded?', !!process.env.JWT_SECRET);
 app.use(cors({
   origin: [
     'https://buy-sell-barter.site.je',
-    'http://buy-sell-barter.site.je'
+    'http://buy-sell-barter.site.je',
+    'https://buy-sell-barter.onrender.com',
+    'http://localhost:5173',
   ],
   credentials: true,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
