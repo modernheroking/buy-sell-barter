@@ -8,5 +8,14 @@
   "icons": [
     { "src": "/app_icon.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/app_icon.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshort.png",
+      "sizes": "1600x1200",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Buy-Sell-Barter Homepage"
+    }
   ]
 }
