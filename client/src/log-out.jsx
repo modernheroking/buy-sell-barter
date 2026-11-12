@@ -6,20 +6,18 @@ function LogOut({ className = 'logout-btn', label = '🚪 Log Out' }) {
     const [confirming, setConfirming] = useState(false);
 
     const doLogout = () => {
-        // 1. Clear all auth + user data
         localStorage.removeItem('token');
         localStorage.removeItem('current_user');
         sessionStorage.removeItem('sellers_draft_media');
         sessionStorage.removeItem('sellers_draft_mode');
 
-        // 2. Tell Header to re-read and show Guest
         window.dispatchEvent(new Event('user-updated'));
 
-        // 3. Go home
+
         navigate('/market');
     };
 
-    // First click = ask, second click = logout
+
     if (!confirming) {
         return (
             <button className={className} onClick={() => setConfirming(true)}>

@@ -1019,7 +1019,7 @@ body { background: #000; }
 .detail-seller div { flex: 1; display: flex; flex-direction: column; }
 .detail-actions { position: fixed; bottom: 0; left: 0; right: 0; max-width: 720px; margin: 0 auto; display: flex; gap: 8px; padding: 12px; background: var(--bg, #fff); border-top: 1px solid #e5e7eb; z-index: 20; }
 .detail-actions button { flex: 1; padding: 13px; border-radius: 12px; border: 0; font-weight: 700; cursor: pointer; font-size: 14px; }
-.btn-call { background: #f3f4f6; } .btn-whatsapp { background: #25D366; color: #fff; } .btn-barter { background: #7c3aed; color: #fff; } .btn-outline { background: #fff; border: 1px solid #ddd !important; } .btn-danger { background: #fee2e2; color: #dc2626; }
+.btn-call { background: #f3f4f6; } .btn-whatsapp { background: #25D366; color: #fff; } .btn-barter { background: #7c3aed; color: #fff; } .btn-outline { background: #fff; border: 1px solid black !important; } .btn-danger { background: #fee2e2; color: #dc2626; }
 /* Swipe + Like */
 .big-heart { position: absolute; inset: 0; display: grid; place-items: center; font-size: 110px; animation: heartPop 0.8s ease forwards; pointer-events: none; z-index: 10; }
 @keyframes heartPop { 0% { transform: scale(0); opacity: 0; } 30% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
@@ -2396,8 +2396,11 @@ body { background: #000; }
 }
 
 
-
-
+@media(max-width: 420px){
+  .logout{
+    display:none;
+  }
+}
 
 
 

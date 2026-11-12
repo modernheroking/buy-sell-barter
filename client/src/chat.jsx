@@ -18,11 +18,13 @@ function Chat() {
   const [recSec, setRecSec] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   const chatBodyRef = useRef(null);
   const recorderRef = useRef(null);
   const chunksRef = useRef([]);
   const recTimerRef = useRef(null);
+  const fileInputRef = useRef(null);
   const meId = (() => { try { return JSON.parse(localStorage.getItem('current_user') || '{}')._id; } catch { return null; } })();
 
   const headers = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
@@ -89,6 +91,45 @@ function Chat() {
     } catch {}
   };
 
+  // ✅ NEW: Send image / video / file / voice via FormData -> Cloudinary
+  const sendFile = async (file, type) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('type', type);
+      form.append('text', text || '');
+      if (replyTo?._id) form.append('replyTo', replyTo._id);
+
+      const r = await fetch(`https://buy-sell-barter.onrender.com/api/messages/${withId}/upload`, {
+        method: 'POST',
+        headers: headers(),
+        body: form,
+      });
+      const data = await r.json().catch(() => ({}));
+      if (data._id) setMsgs(prev => [...prev, data]);
+      else alert(data.msg || 'Upload failed');
+      setText('');
+      setReplyTo(null);
+      scrollDown();
+    } catch (e) {
+      alert('Upload failed - check connection');
+    }
+    setUploading(false);
+  };
+
+  const handleFilePick = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    let type = 'file';
+    if (file.type.startsWith('image/')) type = 'image';
+    else if (file.type.startsWith('video/')) type = 'video';
+    else if (file.type.startsWith('audio/')) type = 'voice';
+    sendFile(file, type);
+    e.target.value = '';
+  };
+
   const toggleRecord = async () => {
     if (isRecording) {
       recorderRef.current?.stop();
@@ -104,7 +145,9 @@ function Chat() {
       rec.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         stream.getTracks().forEach(t => t.stop());
-        alert('Voice recorded - connect your file upload endpoint to send voice. Text works now.');
+        // ✅ FIXED: Actually send voice instead of alert
+        const voiceFile = new File([blob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+        sendFile(voiceFile, 'voice');
       };
       rec.start();
       recorderRef.current = rec;
@@ -122,13 +165,12 @@ function Chat() {
 
   const renderBubble = (m) => {
     if (m.type === 'image') return <><img src={m.fileUrl} alt="" style={{ width: '100%', maxWidth: 300, borderRadius: 8, display: 'block' }} />{m.text && <div style={{ marginTop: 6 }}>{m.text}</div>}</>;
+    if (m.type === 'video') return <><video src={m.fileUrl} controls style={{ width: '100%', maxWidth: 300, borderRadius: 8, display: 'block' }} />{m.text && <div style={{ marginTop: 6 }}>{m.text}</div>}</>;
     if (m.type === 'voice') return <audio controls src={m.fileUrl} style={{ width: 220 }} />;
     if (m.type === 'file') return <><a href={m.fileUrl} download style={{ color: '#53bdeb' }}>📎 {m.fileName || 'Document'}</a>{m.text && <div style={{ marginTop: 6 }}>{m.text}</div>}</>;
     return <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{m.text}</span>;
   };
 
-  // ✅ FIX: ORDER MATTERS - these must be BEFORE the main return, and NOT inside JSX
-  // 1. Loading first
   if (loading) return (
     <div className="chat-wrap" style={{ padding: 40, color: '#fff', textAlign: 'center' }}>
       <p>Loading chat...</p>
@@ -136,7 +178,6 @@ function Chat() {
     </div>
   );
 
-  // 2. Error second - now you will SEE the real error instead of infinite Loading
   if (error) return (
     <div className="chat-wrap" style={{ padding: 40, color: '#fff', textAlign: 'center' }}>
       <h3>⚠️ {error}</h3>
@@ -146,7 +187,6 @@ function Chat() {
     </div>
   );
 
-  // 3. User not found third - only after loading finished and no error
   if (!user) return (
     <div className="chat-wrap" style={{ padding: 40, color: '#fff', textAlign: 'center' }}>
       <h3>User not found</h3>
@@ -154,7 +194,6 @@ function Chat() {
     </div>
   );
 
-  // 4. Main chat - only reached if loading=false, error='', user exists
   return (
     <div className="chat-wrap" style={{ maxWidth: 1000, margin: '0 auto', background: '#0b141a', height: '100dvh', display: 'flex', flexDirection: 'column', color: '#e9edef' }}>
       <div className="chat-header" style={{ height: 59, background: '#202c33', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 10px 0 6px' }}>
@@ -204,10 +243,13 @@ function Chat() {
       )}
 
       {isRecording && <div style={{ textAlign: 'center', background: '#202c33', padding: 8, color: '#fff' }}>🔴 Recording {Math.floor(recSec / 60)}:{String(recSec % 60).padStart(2, '0')} - tap mic again to stop</div>}
+      {uploading && <div style={{ textAlign: 'center', background: '#202c33', padding: 8, color: '#fff' }}>Uploading to Cloudinary...</div>}
 
       <div className="chat-footer" style={{ background: '#202c33', padding: 6, display: 'flex', gap: 6, alignItems: 'flex-end' }}>
         <div style={{ flex: 1, background: '#2a3942', borderRadius: 24, display: 'flex', alignItems: 'flex-end', padding: '5px 6px', gap: 2 }}>
           <button onClick={() => setShowEmoji(!showEmoji)} style={{ background: 'none', border: 0, color: '#8696a0', width: 38, height: 38, cursor: 'pointer', fontSize: 20 }}>😊</button>
+          <button onClick={() => fileInputRef.current?.click()} style={{ background: 'none', border: 0, color: '#8696a0', width: 38, height: 38, cursor: 'pointer', fontSize: 20 }} title="Send photo / video / file">📎</button>
+          <input ref={fileInputRef} type="file" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt" hidden onChange={handleFilePick} />
           <textarea
             value={text}
             onChange={e => setText(e.target.value)}

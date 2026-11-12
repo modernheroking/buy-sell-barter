@@ -155,7 +155,7 @@ function Header() {
                         <h2 onClick={() => setShowAuth(true)} style={{ cursor: 'pointer' }} className='guest'>Guest</h2>
                     )}
                 {user && (
-                    <div>
+                    <div className='logout'>
                        <LogOut />
                     </div>
                 )}

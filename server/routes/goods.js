@@ -1,9 +1,34 @@
 const router = require('express').Router();
 const auth = require('../middleware/auth');
 const Good = require('../models/good');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+const { uploadToCloudinary } = require('../utils/cloudinary');
 
 const getOwnerId = (req) => req.user?._id || req.userId || req.user?.id;
 
+
+
+router.post('/', upload.single('image'), async (req, res) => {
+  try {
+    let imageUrl = '';
+    if (req.file) {
+ 
+      imageUrl = await uploadToCloudinary(req.file.buffer, 'goods');
+    }
+
+
+    const newGood = new Good({
+      ...req.body,
+      image: imageUrl, 
+    });
+
+    await newGood.save();
+    res.json(newGood);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 router.get('/', async (req, res) => {
   try {

@@ -2,9 +2,50 @@ const router = require('express').Router();
 const auth = require('../middleware/auth');
 const Message = require('../models/message');
 const User = require('../models/User');
+const multer = require('multer');
+const { uploadToCloudinary } = require('../utils/cloudinary');
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
 const getId = (req) => req.user?._id || req.userId || req.user?.id;
 
+
+const getUrl = (result) => {
+  if (!result) return '';
+  if (typeof result === 'string') return result;
+  return result.secure_url || result.url || '';
+};
+
+const getFileType = (file) => {
+  if (!file) return 'text';
+  if (file.mimetype.startsWith('image/')) return 'image';
+  if (file.mimetype.startsWith('video/')) return 'video';
+  if (file.mimetype.startsWith('audio/')) return 'voice';
+  return 'file';
+};
+
+
+router.post('/:id/upload', auth, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ msg: 'No file' });
+    const me = getId(req);
+    const folder = req.body.type === 'voice' ? 'buy-sell-barter/voice' : 'buy-sell-barter/chat';
+    const result = await uploadToCloudinary(req.file.buffer, folder);
+    const fileUrl = getUrl(result);
+
+    const msg = await Message.create({
+      sender: me,
+      receiver: req.params.id,
+      text: (req.body.text || '').trim(),
+      type: req.body.type || getFileType(req.file),
+      fileUrl: fileUrl || null,
+      fileName: req.file.originalname || null,
+      replyTo: req.body.replyTo || null,
+    });
+    const populated = await Message.findById(msg._id).populate('sender', 'name username avatar');
+    res.json(populated);
+  } catch (e) { res.status(500).json({ msg: e.message }); }
+});
 
 router.get('/chats', auth, async (req, res) => {
   try {
@@ -40,28 +81,24 @@ router.get('/chats', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ msg: e.message }); }
 });
 
-
 router.get('/:userId', auth, async (req, res) => {
   try {
     const me = getId(req);
     const other = req.params.userId;
-    const after = req.query.after; 
+    const after = req.query.after;
 
     let query = {
       $or: [{ sender: me, receiver: other }, { sender: other, receiver: me }],
       deleted: false,
     };
     if (after) {
-
       const last = await Message.findById(after);
       if (last) query.createdAt = { $gt: last.createdAt };
     }
 
     const msgs = await Message.find(query).sort({ createdAt: 1 }).populate('sender', 'name username avatar').lean();
 
- 
     await Message.updateMany({ sender: other, receiver: me, isSeen: false }, { isSeen: true });
-
 
     const otherUser = await User.findById(other).select('name username avatar').lean();
     res.json({ user: otherUser, messages: msgs });
@@ -87,7 +124,6 @@ router.post('/:userId', auth, async (req, res) => {
     res.json(populated);
   } catch (e) { res.status(500).json({ msg: e.message }); }
 });
-
 
 router.delete('/:id', auth, async (req, res) => {
   try {

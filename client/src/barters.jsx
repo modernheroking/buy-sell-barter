@@ -11,7 +11,7 @@ function Barters() {
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
 
-    // ✅ Current user - for Delete button (only owner sees it)
+
     const meId = (() => { try { return JSON.parse(localStorage.getItem('current_user') || '{}')._id; } catch { return null; } })();
 
     useEffect(() => {

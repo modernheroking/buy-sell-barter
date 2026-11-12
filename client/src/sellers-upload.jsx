@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { setDraftMedia } from './draftStore';
 import './App.css';
 
 function SellersUpload(){
@@ -55,24 +56,27 @@ function SellersUpload(){
     const takePhoto = () => {
         const video = videoRef.current;
         const canvas = canvasRef.current;
+        if (!video || !canvas || !video.videoWidth) { alert('Wait for camera to load'); return; }
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0);
-        const src = canvas.toDataURL('image/jpeg', 0.7);
-        setMedia(prev => [...prev, { type: 'image', src }].slice(0, 5));
+        canvas.toBlob((blob) => {
+            if (!blob) return;
+            const preview = URL.createObjectURL(blob);
+            setMedia(prev => [...prev, { type: 'image', file: blob, preview }].slice(0, 5));
+        }, 'image/jpeg', 0.85);
         setFlash(true); setTimeout(() => setFlash(false), 200);
     };
 
     const startRecording = () => {
+        if (!streamRef.current) { alert('Wait for camera to load'); return; }
         chunksRef.current = [];
         const rec = new MediaRecorder(streamRef.current, { mimeType: 'video/webm' });
         rec.ondataavailable = e => { if(e.data.size) chunksRef.current.push(e.data); };
         rec.onstop = () => {
             const blob = new Blob(chunksRef.current, { type: 'video/webm' });
-            // Convert to dataURL so it survives going to Description page
-            const reader = new FileReader();
-            reader.onload = () => setMedia(prev => [...prev, { type: 'video', src: reader.result }].slice(0, 5));
-            reader.readAsDataURL(blob);
+            const preview = URL.createObjectURL(blob);
+            setMedia(prev => [...prev, { type: 'video', file: blob, preview }].slice(0, 5));
         };
         recorderRef.current = rec;
         rec.start();
@@ -86,23 +90,19 @@ function SellersUpload(){
         setFacing(next); startCamera(next);
     };
 
-    const totalSize = JSON.stringify(media).length;
-    if (totalSize > 8 * 1024 * 1024) { alert('Media too big - use shorter video / fewer photos'); return; }
-
     const handleFile = (e) => {
         const files = Array.from(e.target.files).slice(0, 5);
         files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = () => setMedia(prev => [...prev, { type: file.type.startsWith('video') ? 'video' : 'image', src: reader.result }].slice(0, 5));
-            reader.readAsDataURL(file);
+            const preview = URL.createObjectURL(file);
+            setMedia(prev => [...prev, { type: file.type.startsWith('video') ? 'video' : 'image', file, preview }].slice(0, 5));
         });
+        e.target.value = '';
     };
-
 
     const goToDescription = () => {
         if(media.length === 0){ alert('Picture or Video is compulsory! Capture a photo, record, or Add from gallery'); return; }
         if(streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
-        sessionStorage.setItem('sellers_draft_media', JSON.stringify(media));
+        setDraftMedia(media);
         sessionStorage.setItem('sellers_draft_mode', mode);
         navigate('/sellers-description');
     };
@@ -132,7 +132,7 @@ function SellersUpload(){
 
                 {media.length > 0 && (
                     <div className="cam-thumbs">
-                        {media.map((m,i) => m.type === 'image' ? <img key={i} src={m.src} alt="" /> : <video key={i} src={m.src} muted />)}
+                        {media.map((m,i) => m.type === 'image' ? <img key={i} src={m.preview} alt="" /> : <video key={i} src={m.preview} muted />)}
                     </div>
                 )}
                 {isRecording && <div className="rec-badge">● REC {recordTime}s / {duration}</div>}

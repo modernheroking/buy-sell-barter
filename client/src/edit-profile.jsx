@@ -12,6 +12,11 @@ function EditProfile() {
     gender: 'Male', location: '', country: 'Nigeria', state: '',
     street: '', bio: '', purpose: '', avatar: '', cover: '',
   });
+  // ✅ NEW: Hold real Files, not base64. Preview uses object URL.
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [coverFile, setCoverFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const [coverPreview, setCoverPreview] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -55,24 +60,36 @@ function EditProfile() {
   }, [navigate]);
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  // ✅ FIXED: No FileReader, no canvas, no toDataURL. Just File + preview URL.
   const handleImage = (e, field) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const max = 800;
-        const scale = Math.min(1, max / Math.max(img.width, img.height));
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        setForm(p => ({ ...p, [field]: canvas.toDataURL('image/jpeg', 0.8) }));
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
+    const preview = URL.createObjectURL(file);
+    if (field === 'avatar') {
+      setAvatarFile(file);
+      setAvatarPreview(preview);
+    } else {
+      setCoverFile(file);
+      setCoverPreview(preview);
+    }
+    e.target.value = '';
+  };
+
+  // ✅ NEW: Upload one file to Cloudinary via backend, returns secure_url
+  const uploadOne = async (file, field) => {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('field', field);
+    const res = await fetch('https://buy-sell-barter.onrender.com/api/profile/upload', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.msg || 'Image upload failed');
+    return data.url;
   };
 
   const save = async (e) => {
@@ -81,10 +98,17 @@ function EditProfile() {
     try {
       const token = localStorage.getItem('token');
       if (!token) { navigate('/login'); return; }
+
+      // ✅ NEW: Upload new avatar / cover FIRST, get Cloudinary URLs
+      let finalAvatar = form.avatar;
+      let finalCover = form.cover;
+      if (avatarFile) finalAvatar = await uploadOne(avatarFile, 'avatar');
+      if (coverFile) finalCover = await uploadOne(coverFile, 'cover');
+
       const res = await fetch('https://buy-sell-barter.onrender.com/api/profile/me', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ ...form, age: Number(form.age) }),
+        body: JSON.stringify({ ...form, avatar: finalAvatar, cover: finalCover, age: Number(form.age) }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setError(data.msg || data.error || 'Save failed'); setLoading(false); return; }
@@ -94,7 +118,7 @@ function EditProfile() {
       localStorage.setItem('current_user', JSON.stringify(savedUser));
       window.dispatchEvent(new Event('user-updated'));
       navigate('/profile');
-    } catch { setError('Cannot connect to server'); setLoading(false); }
+    } catch (err) { setError(err.message || 'Cannot connect to server'); setLoading(false); }
   };
 
   return (
@@ -105,11 +129,11 @@ function EditProfile() {
         {error && <div className="auth-error">{error}</div>}
 
         <form onSubmit={save}>
-          <div className="edit-cover" style={{ backgroundImage: form.cover ? `url(${form.cover})` : 'linear-gradient(135deg,#1dbf73,#0e8a4f,#111)' }}>
+          <div className="edit-cover" style={{ backgroundImage: (coverPreview || form.cover) ? `url(${coverPreview || form.cover})` : 'linear-gradient(135deg,#1dbf73,#0e8a4f,#111)' }}>
             <label className="cover-edit">📷 Change Cover<input type="file" accept="image/*" hidden onChange={(e) => handleImage(e, 'cover')} /></label>
           </div>
           <div className="edit-avatar-row">
-            <img src={form.avatar || DefaultUser} alt="" className="edit-avatar" />
+            <img src={avatarPreview || form.avatar || DefaultUser} alt="" className="edit-avatar" />
             <label className="upload-btn">📷 Change Photo<input type="file" accept="image/*" hidden onChange={(e) => handleImage(e, 'avatar')} /></label>
           </div>
 
