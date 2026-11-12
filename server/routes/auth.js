@@ -113,8 +113,8 @@ router.post('/forgot-password', async (req, res) => {
         const { email } = req.body;
         if (!email) return res.status(400).json({ msg: 'Email is required' });
         const user = await User.findOne({ email: email.trim().toLowerCase() });
-        if (!user) return res.json({ msg: 'If an account exists with that email, a reset link has been sent.' });
-        if (!user.password && user.googleId) return res.json({ msg: 'If an account exists with that email, a reset link has been sent.' });
+        if (!user) return res.json({ msg: 'A reset link has been sent.' });
+        if (!user.password && user.googleId) return res.json({ msg: 'A reset link has been sent.' });
 
         const resetToken = crypto.randomBytes(32).toString('hex');
         const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
