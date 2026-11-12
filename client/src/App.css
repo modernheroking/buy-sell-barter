@@ -1008,6 +1008,43 @@ body,
   .chat-body{ padding:8px 8px !important; }
 }
 
+
+/* ======== CHATS ======= */
+
+.chatlist-wrap{
+  width:100%; max-width:600px; margin:0 auto;
+  /* Header ~60px + Footer ~60px = 120px taken. Rest is for chats. */
+  height: calc(100dvh - 120px);
+  height: calc(100svh - 120px);
+  display:flex; flex-direction:column;
+  background: var(--chat-bg); color: var(--chat-text);
+  overflow:hidden; box-sizing:border-box;
+}
+.chatlist-body{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.chat-item:active{ background: var(--chat-input); }
+
+/* Light / Dark variables - add --chat-border if you don't have it */
+:root, [data-theme="light"], body.light{
+  --chat-bg:#ffffff; --chat-header:#f0f2f5; --chat-text:#111b21;
+  --chat-input:#f0f2f5; --chat-me:#d9fdd3; --chat-other:#ffffff;
+  --chat-muted:#667781; --chat-seen:#53bdeb; --chat-border:#e9edef;
+}
+[data-theme="dark"], body.dark, body.dark-mode{
+  --chat-bg:#0b141a; --chat-header:#202c33; --chat-text:#e9edef;
+  --chat-input:#2a3942; --chat-me:#005c4b; --chat-other:#202c33;
+  --chat-muted:#8696a0; --chat-seen:#53bdeb; --chat-border:#222d34;
+}
+
+@media (max-width:600px){
+  .chatlist-wrap{ max-width:100%; height: calc(100dvh - 120px); border-radius:0; }
+}
+
 /* ======== PROFILE ======= */
 
 .profile-page{
