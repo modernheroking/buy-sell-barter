@@ -24,7 +24,7 @@ import BartersDescription from './barters-description.jsx';
 
 import Header from './header.jsx';
 import Footer from './footer.jsx';
-import Register from './Register.jsx';
+import Register from './register.jsx';
 import Login from './login.jsx';
 import './App.css';
 
