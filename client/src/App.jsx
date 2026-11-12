@@ -14,6 +14,8 @@ import Chat from './chat.jsx';
 import ReviewPage from './reviews.jsx';
 import Transaction from './transaction.jsx';
 import TransactionCongrats from './transaction-congrats.jsx';
+import ForgotPassword from './forgot-password.jsx';
+import ResetPassword from './reset-password.jsx';
 
 import SellersUpload from './sellers-upload.jsx';
 import BuyersUpload from './buyers-upload.jsx';
@@ -67,27 +69,30 @@ function Layout() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-          <Route path="/sellers" element={<ProtectedRoute><Sellers /></ProtectedRoute>} />
+          {/* ✅ PUBLIC - Guests CAN view, no login needed */}
+          <Route path="/sellers" element={<Sellers />} />
+          <Route path="/buyers" element={<Buyers />} />
+          <Route path="/barters" element={<Barters />} />
+          <Route path="/good/:id" element={<GoodDetails />} />
+          <Route path="/user/:id" element={<PublicProfile />} />
+          <Route path="/sellers-description" element={<SellersDescription />} />
+          <Route path="/buyers-description" element={<BuyersDescription />} />
+          <Route path="/barters-description" element={<BartersDescription />} />
+
+          {/* 🔒 PRIVATE - Login required: Uploads + You/Profile + Chat + Transaction */}
           <Route path="/sellers-upload" element={<ProtectedRoute><SellersUpload /></ProtectedRoute>} />
-          <Route path="/sellers-description" element={<ProtectedRoute><SellersDescription /></ProtectedRoute>} />
-
-          <Route path="/buyers" element={<ProtectedRoute><Buyers /></ProtectedRoute>} />
           <Route path="/buyers-upload" element={<ProtectedRoute><BuyersUpload /></ProtectedRoute>} />
-          <Route path="/buyers-description" element={<ProtectedRoute><BuyersDescription /></ProtectedRoute>} />
-
-          <Route path="/barters" element={<ProtectedRoute><Barters /></ProtectedRoute>} />
           <Route path="/barters-upload" element={<ProtectedRoute><BartersUpload /></ProtectedRoute>} />
-          <Route path="/barters-description" element={<ProtectedRoute><BartersDescription /></ProtectedRoute>} />
 
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
-          <Route path="/good/:id" element={<GoodDetails />} />
-          <Route path="/user/:id" element={<PublicProfile />} />
-          <Route path="/chats" element={<Chats />} />
-          <Route path="/chat/:id" element={<Chat />} />
-          <Route path="/reviews" element={<ReviewPage />} />
-          <Route path="/transaction/:id" element={<Transaction />} />
+          <Route path="/chats" element={<ProtectedRoute><Chats /></ProtectedRoute>} />
+          <Route path="/chat/:id" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+          <Route path="/reviews" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
+          <Route path="/transaction/:id" element={<ProtectedRoute><Transaction /></ProtectedRoute>} />
         </Routes>
       </main>
 

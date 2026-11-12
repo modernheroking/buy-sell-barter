@@ -10,9 +10,9 @@ function Footer() {
     const [hidden, setHidden] = useState(false);
     const [avatar, setAvatar] = useState(DefaultUser);
     const [badges, setBadges] = useState({ unreadMessages: 0, newSell: 0, newBuy: 0, newMarket: 0 });
-
-
     const clearedAt = useRef({ market: 0, buyers: 0, sellers: 0 });
+
+    const isLoggedIn = () => !!localStorage.getItem('token');
 
     const clearLocally = (tab) => {
         clearedAt.current[tab] = Date.now();
@@ -24,19 +24,24 @@ function Footer() {
         }));
     };
 
-    const go = async (path, tab) => {
+    const go = async (path, tab, requiresAuth = false) => {
+
+        if (requiresAuth && !isLoggedIn()) {
+            navigate('/login', { state: { from: path } });
+            return;
+        }
+
         if (tab) {
             clearLocally(tab);
-    
-            try {
-                const r = await fetch(`https://buy-sell-barter.onrender.com/api/notifications/seen/${tab}`, {
-                    method: 'POST',
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-                });
-                const data = await r.json().catch(() => ({}));
-                if (!r.ok) console.log('❌ Seen FAILED:', r.status, data);
-                else console.log('✅ Seen saved on server:', tab);
-            } catch (e) { console.log('❌ Seen fetch failed:', e); }
+
+            if (isLoggedIn()) {
+                try {
+                    await fetch(`https://buy-sell-barter.onrender.com/api/notifications/seen/${tab}`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                    });
+                } catch {}
+            }
         }
         navigate(path);
     };
@@ -60,22 +65,21 @@ function Footer() {
     useEffect(() => {
         const loadBadges = async () => {
             const token = localStorage.getItem('token');
-            if (!token) return;
+            if (!token) return; // Guests = no badges, no fetch
             try {
                 const r = await fetch('https://buy-sell-barter.onrender.com/api/notifications/badges', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 const data = await r.json().catch(() => ({}));
-                if (typeof data.newMarket !== 'number') { console.log('Badges error:', data); return; }
-
+                if (typeof data.newMarket !== 'number') return;
                 const now = Date.now();
-                setBadges(prev => ({
+                setBadges({
                     unreadMessages: data.unreadMessages,
                     newMarket: now - clearedAt.current.market < 10000 ? 0 : data.newMarket,
                     newBuy: now - clearedAt.current.buyers < 10000 ? 0 : data.newBuy,
                     newSell: now - clearedAt.current.sellers < 10000 ? 0 : data.newSell,
-                }));
-            } catch (e) { console.log('Badges fetch failed:', e); }
+                });
+            } catch {}
         };
         loadBadges();
         const t = setInterval(loadBadges, 5000);
@@ -96,55 +100,42 @@ function Footer() {
 
     const Badge = ({ count }) => {
         if (!count || count <= 0) return null;
-        return (
-            <span style={{
-                position: 'absolute', top: -2, right: -2,
-                background: '#ff3b30', color: '#fff', fontSize: 11, fontWeight: 800,
-                minWidth: 20, height: 20, padding: '0 5px', borderRadius: 12,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                border: '2px solid #fff', zIndex: 10, boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
-                transform: 'translateX(-100%)',
-            }}>
-                {count > 99 ? '99+' : count}
-            </span>
-        );
+        return <span className="footer-badge">{count > 99 ? '99+' : count}</span>;
     };
 
     return (
         <div className={`footer ${hidden ? 'hide-down' : ''}`}>
             <nav id="yt">
-                <a onClick={() => go('/market', 'market')} className="ytb" style={{ position: 'relative' }}>
+                <button type="button" onClick={() => go('/market', 'market', false)} className="ytb">
                     <Badge count={badges.newMarket} />
                     <svg viewBox="0 0 24 24"><path d="M12 3L2 12h3v8h5v-6h4v6h5v-8h3L12 3z" /></svg>
-                    <span>Market</span>
-                </a>
+                    <span className="ytb-label">Market</span>
+                </button>
 
-                <a onClick={() => go('/buyers', 'buyers')} className="ytb" style={{ position: 'relative' }}>
+                <button type="button" onClick={() => go('/buyers', 'buyers', false)} className="ytb">
                     <Badge count={badges.newBuy} />
                     <img src={BuyersIcon} alt="Buyers" className="footer-img" />
-                    <span>Buyers</span>
-                </a>
+                    <span className="ytb-label">Buyers</span>
+                </button>
 
-                <a onClick={() => go('/sellers-upload')} className="ytb plus">
+
+                <button type="button" onClick={() => go('/sellers-upload', null, true)} className="ytb plus">
                     <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg></div>
-                </a>
+                </button>
 
-                <a onClick={() => go('/sellers', 'sellers')} className="ytb" style={{ position: 'relative' }}>
+                <button type="button" onClick={() => go('/sellers', 'sellers', false)} className="ytb">
                     <Badge count={badges.newSell} />
                     <img src={SellersIcon} alt="Sellers" className="footer-img" />
-                    <span>Sellers</span>
-                </a>
+                    <span className="ytb-label">Sellers</span>
+                </button>
 
-                <a onClick={() => go('/profile')} className="ytb" style={{ position: 'relative' }}>
+                <button type="button" onClick={() => go('/profile', null, true)} className="ytb">
                     <Badge count={badges.unreadMessages} />
-                    <div className='you'>
-                        <img src={avatar} alt="You" className="footer-img you-img" />
-                    </div>
-                    <span>You</span>
-                </a>
+                    <div className='you'><img src={avatar} alt="You" className="footer-img you-img" /></div>
+                    <span className="ytb-label">You</span>
+                </button>
             </nav>
         </div>
     );
 }
-
 export default Footer;

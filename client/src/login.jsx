@@ -3,6 +3,8 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import './App.css';
 import AppIcon from './assets/app_icon.png';
 
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'PASTE_YOUR_CLIENT_ID_HERE.apps.googleusercontent.com';
+
 function Login() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -15,6 +17,7 @@ function Login() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
     if (location.state?.registered) {
@@ -22,6 +25,58 @@ function Login() {
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
+
+  // ✅ Load Google script + render Google button
+  useEffect(() => {
+    const initGoogle = () => {
+      if (!window.google) return;
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleLogin,
+      });
+      window.google.accounts.id.renderButton(
+        document.getElementById('google-btn'),
+        { theme: 'outline', size: 'large', width: '100%', text: 'continue_with' }
+      );
+    };
+
+    const handleGoogleLogin = async (response) => {
+      setGoogleLoading(true);
+      setError('');
+      try {
+        const res = await fetch('https://buy-sell-barter.onrender.com/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credential: response.credential }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setError(data.msg || 'Google login failed');
+          setGoogleLoading(false);
+          return;
+        }
+        localStorage.setItem('token', data.token);
+        if (data.user) localStorage.setItem('current_user', JSON.stringify(data.user));
+        window.dispatchEvent(new Event('user-updated'));
+        navigate(from, { replace: true });
+      } catch {
+        setError('Cannot connect to server.');
+        setGoogleLoading(false);
+      }
+    };
+
+    // Load script if not already loaded
+    if (!window.google) {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = initGoogle;
+      document.body.appendChild(script);
+    } else {
+      initGoogle();
+    }
+  }, [from, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -44,13 +99,9 @@ function Login() {
         return;
       }
 
-     
       localStorage.setItem('token', data.token);
       if (data.user) localStorage.setItem('current_user', JSON.stringify(data.user));
-
-      
       window.dispatchEvent(new Event('user-updated'));
-
       navigate(from, { replace: true });
 
     } catch (err) {
@@ -65,7 +116,6 @@ function Login() {
         <img src={AppIcon} alt="Buy & Sell" className="login-logo" />
         <h1>Welcome Back</h1>
         <p className="login-sub">Login to buy, sell & barter</p>
-
 
         {success && (
           <div className="login-success" style={{ background: '#e8f5e9', color: '#2e7d32', padding: '10px 12px', borderRadius: '8px', marginBottom: '12px', fontSize: '14px' }}>
@@ -111,9 +161,9 @@ function Login() {
 
         <div className="login-divider"><span>or</span></div>
 
-        <button className="login-google-btn" onClick={() => alert('Google login coming soon')}>
-          <span>G</span> Continue with Google
-        </button>
+        {/* ✅ REAL Google button - rendered by Google */}
+        {googleLoading && <p style={{ textAlign: 'center', fontSize: 13 }}>Signing in with Google...</p>}
+        <div id="google-btn" style={{ display: 'flex', justifyContent: 'center', width: '100%' }}></div>
 
         <p className="login-switch">
           Don't have an account? <Link to="/register">Create Account →</Link>
