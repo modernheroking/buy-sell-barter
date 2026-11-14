@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Market from './market.jsx';
 import Buyers from './buyers.jsx';
@@ -49,7 +50,7 @@ function Layout() {
     '/barters-upload',
   ].includes(location.pathname);
 
-  // ✅ FIX: Chat gets full screen - no Header, no Footer
+
   const isChatPage = location.pathname.startsWith('/chat/');
   const hideChrome = isCameraPage || isChatPage;
 
@@ -57,11 +58,11 @@ function Layout() {
     <div className={isCameraPage ? 'no-header-layout' : isChatPage ? 'chat-layout' : 'app-layout'}>
       {!hideChrome && <Header />}
 
-      {/* ✅ Global popup - OUTSIDE Routes, INSIDE the ONE BrowserRouter - works on every page */}
+      
       <TransactionCongrats />
 
       <main className={isCameraPage ? 'camera-main' : isChatPage ? 'chat-main' : 'main'}>
-        {/* ✅ NO <Router> here - BrowserRouter in App() is the only router */}
+        
         <Routes>
           <Route path="/" element={<Market />} />
           <Route path="/market" element={<Market />} />
@@ -72,7 +73,7 @@ function Layout() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-          {/* ✅ PUBLIC - Guests CAN view, no login needed */}
+        
           <Route path="/sellers" element={<Sellers />} />
           <Route path="/buyers" element={<Buyers />} />
           <Route path="/barters" element={<Barters />} />
@@ -82,7 +83,7 @@ function Layout() {
           <Route path="/buyers-description" element={<BuyersDescription />} />
           <Route path="/barters-description" element={<BartersDescription />} />
 
-          {/* 🔒 PRIVATE - Login required: Uploads + You/Profile + Chat + Transaction */}
+          
           <Route path="/sellers-upload" element={<ProtectedRoute><SellersUpload /></ProtectedRoute>} />
           <Route path="/buyers-upload" element={<ProtectedRoute><BuyersUpload /></ProtectedRoute>} />
           <Route path="/barters-upload" element={<ProtectedRoute><BartersUpload /></ProtectedRoute>} />
@@ -96,13 +97,30 @@ function Layout() {
         </Routes>
       </main>
 
-      {/* ✅ FIX: Footer AFTER main, not before. Hidden on chat/camera. */}
+
       {!hideChrome && <Footer />}
     </div>
   );
 }
 
 function App() {
+  useEffect(() => {
+
+    const wakeBackend = async () => {
+      try {
+        await fetch(`${import.meta.env.VITE_API_URL}/api/health`);
+        console.log('Backend awake');
+      } catch (err) {
+        console.log('Waking backend...');
+      }
+    };
+
+    wakeBackend();
+
+    const retry = setTimeout(wakeBackend, 10000);
+    return () => clearTimeout(retry);
+  }, []);
+
   return (
     <BrowserRouter>
       <Layout />

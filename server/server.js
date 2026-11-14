@@ -19,6 +19,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type','Authorization']
 }));
 
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'awake' });
+});
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -38,8 +41,12 @@ app.use('/api/transactions', require('./routes/transactions'));
 
 app.use(express.static(path.join(__dirname, '../client/dist')));
 app.get('/*splat', (req, res) => {
+  // Don't hijack API routes
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ message: 'API route not found' });
+  }
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
